@@ -200,6 +200,9 @@ services:
 * `PORT_RANGE`  - Port range to whitelist for both UDP and TCP. For example '- PORT_RANGE=9091 9095'
 * `CHECK_CONNECTION_INTERVAL`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- CHECK_CONNECTION_INTERVAL=600'
 * `CHECK_CONNECTION_URL`  - URL for checking Internet connection. (www.google.com by default) For example '- CHECK_CONNECTION_URL=www.custom.domain'
+* `MESHNET`  - "ON or OFF" Enable or Disable NordVPN Mesh. (OFF by default)
+* todo: `MESHNET_NAME`  - Meshnet hostname for this device.
+* todo: `ALLOW_LOCAL_HOSTS`  - Meshnet hosts allowed to access to local network. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
 
 # Issues
 
