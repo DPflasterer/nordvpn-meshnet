@@ -7,8 +7,6 @@ nordvpn set technology ${TECHNOLOGY:-NordLynx}
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 [[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
-[[ -n ${MESHNET} ]] && nordvpn set meshnet ${MESHNET} && nordvpn meshnet peer list
-#[[ -n ${KILLSWITCH} ]] && nordvpn set killswitch ${KILLSWITCH} Killswitch is enabled by default using iptables
 
 [[ -n ${PROTOCOL} ]] && nordvpn set protocol ${PROTOCOL}
 

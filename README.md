@@ -201,8 +201,12 @@ services:
 * `CHECK_CONNECTION_INTERVAL`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- CHECK_CONNECTION_INTERVAL=600'
 * `CHECK_CONNECTION_URL`  - URL for checking Internet connection. (www.google.com by default) For example '- CHECK_CONNECTION_URL=www.custom.domain'
 * `MESHNET`  - "ON or OFF" Enable or Disable NordVPN Mesh. (OFF by default)
-* todo: `MESHNET_NAME`  - Meshnet hostname for this device.
-* todo: `ALLOW_LOCAL_HOSTS`  - Meshnet hosts allowed to access to local network. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
+* `MESHNET_NAME`  - Meshnet hostname for this device.
+* `ALLOW_LOCAL_HOSTS`  - Meshnet hosts allowed to access to local network. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
+* `ALLOW_INCOMING_HOSTS`  - Meshnet hosts allowed to access to local network. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
+* `ALLOW_ROUTING_HOSTS`  - Meshnet hosts enabled traffic routing. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
+* `ALLOW_FILE_HOSTS`  - Meshnet hosts enabled file sharing. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
+* `ALLOW_ALL_HOSTS`  - Meshnet hosts allowed to access to local network, incoming connections, traffic routing, and file sharing. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
 
 # Issues
 

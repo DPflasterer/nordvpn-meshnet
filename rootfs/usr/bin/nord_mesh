@@ -1,0 +1,116 @@
+#!/usr/bin/with-contenv bash
+
+function is_allowed(){
+  local host=$1
+  local nick=$1
+  local ind_ls=$1
+
+  if ([[ ",${ALLOWED_ALL_HOSTS}," =~ ",${host}," ]] || [[ ",${allow_ind_ls}," =~ ",${host}," ]] || [[ ",${ALLOWED_ALL_HOSTS}," =~ ",${nick}," ]] || [[ ",${allow_ind_ls}," =~ ",${nick}," ]]); then
+    return 1
+  else
+    return 0
+  fi
+}
+
+function process_peer() {
+  local label=$1
+  local nick=$2
+  local host=$3
+  local cur_val=$4
+  local allow_ind_ls=$5
+  local enable_eval=$6
+  local block_eval=$7
+
+
+  if [[ -n ${MESHNET_NAME} ]] && [[ "${MESHNET_NAME}" == "${nick}" ]]; then
+    echo "Removing ghost (${nick}) from Meshnet."
+    nordvpn meshnet peer remove ${host}
+    return 0
+#    current_sleep=1
+#    until nordvpn meshnet peer remove ${host} ; do
+#      if [ ${current_sleep} -gt 4096 ]; then
+#        echo "Unable to remove ${MESHNET_NAME}."
+#        exit 1
+#      fi
+#      echo "Unable to remove ${MESHNET_NAME} retrying in ${current_sleep + 5} seconds."
+#      sleep ${current_sleep + 5}
+#      current_sleep=$((current_sleep * 2))
+#    done
+  fi
+  if [ ${cur_val} == "disabled" ] && is_allowed ${host} ${nick} ${allow_ind_ls} ; then
+    echo "${label}: enabling..."
+    eval "${enable_eval}"
+  elif [ ${cur_val} == "enabled" ] && is_allowed ${host} ${nick} ${allow_ind_ls} ; then
+    echo "${label}: already enabled"
+  elif [ ${cur_val} == "enabled" ] && ! is_allowed ${host} ${nick} ${allow_ind_ls} ; then
+    echo "${label}: blocking..."
+    eval "${block_eval}"
+  elif [ ${cur_val} == "disabled" ] && ! is_allowed ${host} ${nick} ${allow_ind_ls} ; then
+    echo "${label}: blocked."
+  else
+    echo "${label}: how did I get here?"
+  fi
+}
+
+if [[ -n ${MESHNET} ]]; then
+  sleep 1
+  echo "Attempting to toggle meshnet..."
+  current_sleep=1
+  until nordvpn set meshnet on; do
+    if [ ${current_sleep} -gt 4096 ]; then
+      echo "Unable to toggle meshnet on."
+      exit 1
+    fi
+    echo "Unable to toggle meshnet on. retrying in ${current_sleep} seconds."
+    sleep ${current_sleep}
+    current_sleep=$((current_sleep * 2))
+  done
+  nordvpn status
+
+  echo "======"
+
+  PEER_LIST=$(nordvpn meshnet peer list)
+
+  PEERS=($(echo "$PEER_LIST" | awk '/Hostname:/ {print $2}'))
+  HOSTNAME=PEERS[0]
+  unset PEERS[0] # remove self
+  PEERS=("${PEERS[@]}")
+
+  NICKS=($(echo "$PEER_LIST" | awk '/Nickname:/ {print $2}'))
+  NICKNAME=NICKS[0]
+  unset NICKS[0] # remove self
+  NICKS=("${NICKS[@]}")
+
+  ALLOW_TRAFFIC=($(echo "$PEER_LIST" | awk '/Allow Incoming Traffic:/ {print $4}'))
+  ALLOW_ROUTING=($(echo "$PEER_LIST" | awk '/Allow Routing:/ {print $3}'))
+  ALLOW_LOCAL=($(echo "$PEER_LIST" | awk '/Allow Local Network Access:/ {print $5}'))
+  ALLOW_FILE=($(echo "$PEER_LIST" | awk '/Allow Sending Files:/ {print $4}'))
+
+  echo -e "NordVPN Meshnet peer settings"
+  for index in "${!PEERS[@]}"
+  do
+      echo "Index: $index"
+      echo "Hostname: ${PEERS[$index]}"
+      echo "Nickname: ${NICKS[$index]}"
+
+      process_peer "Allow Incoming Traffic" "${NICKS[$index]}" "${PEERS[$index]}" "${ALLOW_TRAFFIC[$index]}" "${ALLOW_INCOMING_HOSTS}" "nordvpn meshnet peer incoming allow ${PEERS[$index]}" "nordvpn meshnet peer incoming deny ${PEERS[$index]}"
+      process_peer "Allow Routing" "${NICKS[$index]}" "${PEERS[$index]}" "${ALLOW_ROUTING[$index]}" "${ALLOW_ROUTING_HOSTS}" "nordvpn meshnet peer routing allow ${PEERS[$index]}" "nordvpn meshnet peer routing deny ${PEERS[$index]}"
+      process_peer "Allow Local Network Access" "${NICKS[$index]}" "${PEERS[$index]}" "${ALLOW_LOCAL[$index]}" "${ALLOW_LOCAL_HOSTS}" "nordvpn meshnet peer local allow ${PEERS[$index]}" "nordvpn meshnet peer local deny ${PEERS[$index]}"
+      process_peer "Allow Sending Files" "${NICKS[$index]}" "${PEERS[$index]}" "${ALLOW_FILE[$index]}" "${ALLOW_FILE_HOSTS}" "nordvpn meshnet peer fileshare allow ${PEERS[$index]}" "nordvpn meshnet peer fileshare deny ${PEERS[$index]}"
+
+      echo "======"
+  done
+
+  # todo: and HOSTNAME != MESHNET_NAME
+  if [[ -n ${MESHNET_NAME} ]]; then
+    sleep 5
+    echo "Setting nickname to ${MESHNET_NAME}"
+    nordvpn meshnet set nickname ${MESHNET_NAME}
+  fi
+  echo "======config complete======"
+  nordvpn meshnet peer list
+  echo "==========================="
+
+fi
+
+exit 0
