@@ -26,16 +26,6 @@ function process_peer() {
     echo "Removing ghost (${nick}) from Meshnet."
     nordvpn meshnet peer remove ${host}
     return 0
-#    current_sleep=1
-#    until nordvpn meshnet peer remove ${host} ; do
-#      if [ ${current_sleep} -gt 4096 ]; then
-#        echo "Unable to remove ${MESHNET_NAME}."
-#        exit 1
-#      fi
-#      echo "Unable to remove ${MESHNET_NAME} retrying in ${current_sleep + 5} seconds."
-#      sleep ${current_sleep + 5}
-#      current_sleep=$((current_sleep * 2))
-#    done
   fi
   if [ ${cur_val} == "disabled" ] && is_allowed ${host} ${nick} ${allow_ind_ls} ; then
     echo "${label}: enabling..."
@@ -53,24 +43,29 @@ function process_peer() {
 }
 
 if [[ -n ${MESHNET} ]]; then
-  sleep 1
-  echo "Attempting to toggle meshnet..."
-  current_sleep=1
-  until nordvpn set meshnet on; do
-    if [ ${current_sleep} -gt 4096 ]; then
-      echo "Unable to toggle meshnet on."
-      exit 1
-    fi
-    echo "Unable to toggle meshnet on. retrying in ${current_sleep} seconds."
-    sleep ${current_sleep}
-    current_sleep=$((current_sleep * 2))
-  done
-  nordvpn status
+  MESH_STATUS=$(nordvpn settings)
+  MESH_STATUS=($(echo "$MESH_STATUS" | awk '/Meshnet:/ {print $2}'))
+
+  if [ ${MESH_STATUS} != "enabled" ]; then
+    sleep 1
+    echo "Attempting to toggle meshnet..."
+    current_sleep=1
+    until nordvpn set meshnet on; do
+      if [ ${current_sleep} -gt 4096 ]; then
+        echo "Unable to toggle meshnet on."
+        exit 1
+      fi
+      echo "Unable to toggle meshnet on. retrying in ${current_sleep} seconds."
+      sleep ${current_sleep}
+      current_sleep=$((current_sleep * 2))
+    done
+  else
+    echo "Meshnet already enabled."
+  fi
 
   echo "======"
 
   PEER_LIST=$(nordvpn meshnet peer list)
-
   PEERS=($(echo "$PEER_LIST" | awk '/Hostname:/ {print $2}'))
   HOSTNAME=PEERS[0]
   unset PEERS[0] # remove self
@@ -101,15 +96,14 @@ if [[ -n ${MESHNET} ]]; then
       echo "======"
   done
 
-  # todo: and HOSTNAME != MESHNET_NAME
-  if [[ -n ${MESHNET_NAME} ]]; then
+  if [[ -n ${MESHNET_NAME} ]] && [[ "${MESHNET_NAME}" != "${HOSTNAME}" ]]; then
     sleep 5
     echo "Setting nickname to ${MESHNET_NAME}"
     nordvpn meshnet set nickname ${MESHNET_NAME}
+  else
+    echo "Nickname already ${MESHNET_NAME}"
   fi
   echo "======config complete======"
-  nordvpn meshnet peer list
-  echo "==========================="
 
 fi
 

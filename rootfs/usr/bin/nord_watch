@@ -11,6 +11,10 @@ while true; do
       exit 1
     fi
   fi
+  if ! nord_mesh ; then
+    echo "Unable to configure Meshnet"
+    exit 1
+  fi
 done
 
 exit 0

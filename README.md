@@ -207,6 +207,7 @@ services:
 * `ALLOW_ROUTING_HOSTS`  - Meshnet hosts enabled traffic routing. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
 * `ALLOW_FILE_HOSTS`  - Meshnet hosts enabled file sharing. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
 * `ALLOW_ALL_HOSTS`  - Meshnet hosts allowed to access to local network, incoming connections, traffic routing, and file sharing. For example 'secret.meerkat-alpine.nord,secret.meerkat-beaver.nord'.
+* `DOCKER_FIREWALL`  - When set to 'off', turns off the default.
 
 # Issues
 
