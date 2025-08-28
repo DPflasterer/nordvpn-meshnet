@@ -1,23 +1,23 @@
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy
-LABEL maintainer="Julio Gutierrez julio.guti+nordvpn@pm.me"
+FROM ubuntu:24.04
 
-ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget apt-transport-https ca-certificates curl iputils-ping && \
+    wget -qO /etc/apt/trusted.gpg.d/nordvpn_public.asc https://repo.nordvpn.com/gpg/nordvpn_public.asc && \
+    echo "deb https://repo.nordvpn.com/deb/nordvpn/debian stable main" > /etc/apt/sources.list.d/nordvpn.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends nordvpn && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update -y && \
-    apt-get install -y curl iputils-ping libc6 wireguard && \
-    curl https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb --output /tmp/nordrepo.deb && \
-    apt-get install -y /tmp/nordrepo.deb && \
-    apt-get update -y && \
-    apt-get install -y nordvpn && \
-    apt-get remove -y nordvpn-release && \
-    apt-get autoremove -y && \
-    apt-get autoclean -y && \
-    rm -rf \
-		/tmp/* \
-		/var/cache/apt/archives/* \
-		/var/lib/apt/lists/* \
-		/var/tmp/*
+ENTRYPOINT /etc/init.d/nordvpn start && sleep 5 && /bin/bash -c "$@"
 
-COPY /rootfs /
-ENV S6_CMD_WAIT_FOR_SERVICES=1
-CMD nord_login && nord_config && nord_mesh && nord_watch
+COPY /rootfs/usr/bin /usr/bin
+#RUN chmod +x /usr/bin/nord_login /usr/bin/nord_config /usr/bin/nord_mesh /usr/bin/nord_mesh_config /usr/bin/nord_watch
+RUN chmod +x /usr/bin/nord_login /usr/bin/nord_config /usr/bin/nord_mesh /usr/bin/nord_mesh_config /usr/bin/nord_watch /usr/bin/dockerNetworks
+
+CMD bash
+#CMD nord_login && nord_config && nord_mesh && nord_mesh_config && nord_watch
+#CMD nord_login && nord_config && nord_mesh && nord_watch
+
+
+CMD nord_login && nord_mesh && nord_mesh_config && nord_watch

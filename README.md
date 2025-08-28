@@ -26,6 +26,12 @@ Once it's up other containers can be started using its network connection:
 
     docker run -it --net=container:vpn -d other/docker-container
 
+## to build
+docker buildx build --platform linux/amd64,linux/arm64/v8 -t dpflasterer/nordvpn-meshnet:2.3.2 -t dpflasterer/nordvpn-meshnet:latest .
+## tp publish
+docker push dpflasterer/nordvpn-meshnet:latest
+
+
 ## docker-compose example
 ```
 version: "3"

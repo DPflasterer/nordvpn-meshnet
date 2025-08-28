@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/env bash
 
 if ! iptables -L > /dev/null 2>&1; then
   echo "FATAL: iptables is not functional. Ensure your container config adds --cap-add=NET_ADMIN,NET_RAW" 1>&2
@@ -19,13 +19,15 @@ while [ ! -S /run/nordvpn/nordvpnd.sock ] ; do
 done
 
 [[ -z "${TOKEN}" ]] && [[ -f "${TOKENFILE}" ]] && TOKEN="$(head -n 1 "${TOKENFILE}")"
-nordvpn logout --persist-token > /dev/null
+#nordvpn logout --persist-token > /dev/null
 
 if [[ -n ${TOKEN} ]]; then
-  nordvpn login --token "${TOKEN}" || {
+  echo "logging in"
+  echo "n" | nordvpn login --token "${TOKEN}" || {
     echo "Invalid token."
     exit 1
   }
+  echo "logged in"
 else
   echo "No token set."
   exit 1
